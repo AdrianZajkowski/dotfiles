@@ -1,0 +1,15 @@
+# Ignore all
+*
+
+# except this
+!.gitignore
+!ghostty/
+!ghostty/**
+!nvim/
+!nvim/**
+!starship/
+!starship/**
+
+# Ignore this in excepted catalogs
+*.log
+.DS_Store
