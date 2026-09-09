@@ -13,18 +13,7 @@ require("snacks").setup({
 	indent = {
 		enabled = true,
 	},
-	bufdelete = {
-		enabled = true,
-	},
 })
-
-vim.keymap.set("n", "<leader>c", function()
-	Snacks.bufdelete.delete()
-end, { desc = "Buffer close" })
-
-vim.keymap.set("n", "<C-c>", function()
-	Snacks.bufdelete.other()
-end, { desc = "Buffer close all without current" })
 
 vim.keymap.set("n", "<leader>gg", function()
 	Snacks.lazygit()
