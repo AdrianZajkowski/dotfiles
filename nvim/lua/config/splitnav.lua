@@ -2,10 +2,16 @@ local M = {}
 
 local function is_floating(win)
 	local cfg = vim.api.nvim_win_get_config(win)
-	return cfg and (cfg.relative ~= "" and cfg.relative ~= nil)
+	return cfg and cfg.relative ~= nil and cfg.relative ~= ""
 end
 
-local function sort_windows(wins)
+local function ordered_windows()
+	local wins = {}
+	for _, w in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+		if not is_floating(w) then
+			table.insert(wins, w)
+		end
+	end
 	table.sort(wins, function(a, b)
 		local ay, ax = unpack(vim.api.nvim_win_get_position(a))
 		local by, bx = unpack(vim.api.nvim_win_get_position(b))
@@ -18,16 +24,9 @@ local function sort_windows(wins)
 end
 
 function M.goto_split(n)
-	local wins = vim.api.nvim_tabpage_list_wins(0)
-	local normal = {}
-	for _, w in ipairs(wins) do
-		if not is_floating(w) then
-			table.insert(normal, w)
-		end
-	end
-	sort_windows(normal)
-	if n <= #normal then
-		vim.api.nvim_set_current_win(normal[n])
+	local wins = ordered_windows()
+	if n <= #wins then
+		vim.api.nvim_set_current_win(wins[n])
 	else
 		vim.notify("No such split: " .. n, vim.log.levels.WARN)
 	end
