@@ -7,6 +7,10 @@ vim.o.expandtab = true
 vim.o.smartindent = true
 vim.o.scrolloff = 10
 vim.o.clipboard = "unnamedplus"
+-- Use the local terminal clipboard when connected over SSH
+if vim.env.SSH_TTY or vim.env.SSH_CONNECTION then
+	vim.g.clipboard = "osc52"
+end
 vim.o.splitright = true
 vim.o.splitbelow = true
 vim.o.cursorline = true
