@@ -1,5 +1,5 @@
 -- lsp
-vim.lsp.enable({ "lua_ls", "tsgo", "gopls" })
+vim.lsp.enable({ "lua_ls", "tsgo", "gopls", "phpactor", "psalm", "vacuum" })
 
 local severity = vim.diagnostic.severity
 vim.diagnostic.config({
@@ -22,9 +22,6 @@ vim.diagnostic.config({
 vim.api.nvim_create_autocmd("LspAttach", {
 	callback = function(ev)
 		local client = vim.lsp.get_client_by_id(ev.data.client_id)
-		if client ~= nil and client:supports_method("textDocument/completion") then
-			vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
-		end
 
 		local opts = { buffer = ev.buf, silent = true }
 		local builtin = require("telescope.builtin")
@@ -33,7 +30,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		vim.keymap.set("n", "gi", builtin.lsp_implementations, opts)
 		vim.keymap.set("n", "gr", builtin.lsp_references, opts)
 		vim.keymap.set("n", "<leader>ds", builtin.lsp_document_symbols, opts)
-		vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+		vim.keymap.set("n", "K", function()
+			vim.lsp.buf.hover({ border = "rounded" })
+		end, opts)
 		vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
 		vim.keymap.set("n", "<leader>.", vim.lsp.buf.code_action, opts)
 
@@ -53,20 +52,3 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		end
 	end,
 })
-
-vim.cmd("set completeopt+=noselect")
-
--- Completion popup keymaps (insert mode)
--- <C-Space> trigger, <Tab> accept selected (or next), <S-Tab> previous.
-vim.keymap.set("i", "<C-Space>", function()
-	vim.lsp.completion.get()
-end)
-vim.keymap.set("i", "<Tab>", function()
-	if vim.fn.pumvisible() == 1 then
-		return vim.fn.complete_info({ "selected" }).selected ~= -1 and "<C-y>" or "<C-n>"
-	end
-	return "<Tab>"
-end, { expr = true })
-vim.keymap.set("i", "<S-Tab>", function()
-	return vim.fn.pumvisible() == 1 and "<C-p>" or "<S-Tab>"
-end, { expr = true })

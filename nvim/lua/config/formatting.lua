@@ -10,6 +10,13 @@ M.formatters = {
 	go = "gofmt",
 }
 
+-- User-configurable: filetype -> shell command that formats the file in
+-- place on disk (no stdin/stdout support). These run *after* the buffer is
+-- written, then the buffer is reloaded from disk.
+M.file_formatters = {
+	php = "php-cs-fixer fix --quiet %",
+}
+
 -- Run gopls "organize imports" (goimports) before saving Go files.
 local function organize_go_imports(bufnr)
 	local params = vim.lsp.util.make_range_params(0, "utf-8")
@@ -62,6 +69,34 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 					break
 				end
 			end
+		end
+	end,
+})
+
+-- File-based formatters (e.g. php-cs-fixer) can't read from stdin, so they
+-- run after the file is already written to disk. We then reload the buffer
+-- from disk, preserving the cursor position, and mark it unmodified.
+vim.api.nvim_create_autocmd("BufWritePost", {
+	callback = function(args)
+		local bufnr = args.buf
+		local ft = vim.bo[bufnr].filetype
+		local cmd = M.file_formatters[ft]
+
+		if not cmd then
+			return
+		end
+
+		local bufname = vim.api.nvim_buf_get_name(bufnr)
+		local resolved = cmd:gsub("%%", bufname)
+
+		vim.fn.system(resolved)
+
+		if vim.v.shell_error == 0 then
+			local view = vim.fn.winsaveview()
+			local lines = vim.fn.readfile(bufname)
+			vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+			vim.bo[bufnr].modified = false
+			vim.fn.winrestview(view)
 		end
 	end,
 })

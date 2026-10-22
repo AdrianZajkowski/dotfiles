@@ -2,6 +2,7 @@ vim.g.mapleader = " "
 
 require("config.options")
 require("plugins.colorscheme")
+require("plugins.blink")
 require("config.lsp")
 require("config.autocommands")
 require("config.diagnostics")
@@ -22,3 +23,4 @@ require("plugins.autopairs")
 require("plugins.flash")
 require("plugins.lualine")
 require("plugins.quicker")
+require("plugins.tabout")

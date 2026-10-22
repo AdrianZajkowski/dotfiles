@@ -8,12 +8,26 @@ vim.pack.add({
 })
 
 require("neotest").setup({
+	log_level = vim.log.levels.DEBUG,
+	concurrent = 1,
+	running = { concurrent = false },
+	output = { open_on_run = false },
+	output_panel = { enabled = true },
 	adapters = {
-		require("neotest-golang")({}),
+		require("neotest-golang")({
+			go_test_args = { "-v", "-count=1" },
+			colorize_test_output = false,
+		}),
 		require("neotest-phpunit")({
 			filter_dirs = { ".git", "node_modules", "vendor" },
+			env = { OTEL_PHP_DETECTORS = "none" },
 			phpunit_cmd = function()
-				return { "php", "-d", "memory_limit=-1", "vendor/bin/phpunit" }
+				return {
+					"sh",
+					"-c",
+					'ulimit -n 10240; exec php -d memory_limit=-1 vendor/bin/phpunit "$@"',
+					"sh",
+				}
 			end,
 		}),
 	},
@@ -26,6 +40,12 @@ end, { desc = "Run File (Neotest)" })
 vim.keymap.set("n", "<leader>tT", function()
 	require("neotest").run.run(vim.uv.cwd())
 end, { desc = "Run All Test Files (Neotest)" })
+vim.keymap.set("n", "<leader>tA", function()
+	vim.cmd("botright split | resize 20 | terminal")
+	local cmd = 'OTEL_PHP_DETECTORS=none php -d memory_limit=-1 vendor/bin/phpunit --colors=always\r'
+	vim.fn.chansend(vim.b.terminal_job_id, cmd)
+	vim.cmd("startinsert")
+end, { desc = "Run Full Suite (single phpunit)" })
 vim.keymap.set("n", "<leader>tr", function()
 	require("neotest").run.run()
 end, { desc = "Run Nearest (Neotest)" })

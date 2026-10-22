@@ -26,3 +26,4 @@ vim.o.autoread = true
 vim.o.laststatus = 3
 vim.o.cmdheight = 0
 vim.o.timeoutlen = 400
+vim.o.shortmess = vim.o.shortmess .. "S"
